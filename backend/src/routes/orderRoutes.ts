@@ -1,17 +1,22 @@
 import { Router } from "express";
-// import { addOrder } from "../controllers/orderController";
-// import { addOrder, getOrders } from "../controllers/orderController";
 import {
-  addOrder,
+  createOrder,
+  deleteOrder,
+  getOrderById,
   getOrders,
   updateOrderStatus,
-  deleteOrder,
 } from "../controllers/orderController";
+import { authenticate, authorize } from "../middleware/auth";
+
 const router = Router();
 
-router.post("/", addOrder);
-router.get("/", getOrders);
-router.put("/:id", updateOrderStatus);
-router.delete("/:id", deleteOrder);
+router.use(authenticate);
+
+router.get("/", authorize(["Admin", "Sales", "Warehouse", "Accounts"]), getOrders);
+router.get("/:id", authorize(["Admin", "Sales", "Warehouse", "Accounts"]), getOrderById);
+router.post("/", authorize(["Admin", "Sales"]), createOrder);
+router.put("/:id/status", authorize(["Admin", "Sales"]), updateOrderStatus);
+router.put("/:id", authorize(["Admin", "Sales"]), updateOrderStatus);
+router.delete("/:id", authorize(["Admin"]), deleteOrder);
 
 export default router;

@@ -1,22 +1,27 @@
 import { Router } from "express";
 import {
-  addCustomer,
+  addCustomerFollowUp,
+  createCustomer,
+  deleteCustomer,
+  getCustomerById,
   getCustomers,
   updateCustomer,
-  deleteCustomer,
 } from "../controllers/customerController";
+import { authenticate, authorize } from "../middleware/auth";
+
 const router = Router();
 
-// Add Customer
-router.post("/", addCustomer);
-router.get("/", getCustomers);
-router.put("/:id", updateCustomer);
-router.delete(
-  "/:id",
-  (req, res, next) => {
-    console.log("DELETE route reached");
-    next();
-  },
-  deleteCustomer,
+router.use(authenticate);
+
+router.get("/", authorize(["Admin", "Sales", "Accounts"]), getCustomers);
+router.get("/:id", authorize(["Admin", "Sales", "Accounts"]), getCustomerById);
+router.post("/", authorize(["Admin", "Sales"]), createCustomer);
+router.put("/:id", authorize(["Admin", "Sales"]), updateCustomer);
+router.delete("/:id", authorize(["Admin"]), deleteCustomer);
+router.post(
+  "/:id/follow-ups",
+  authorize(["Admin", "Sales"]),
+  addCustomerFollowUp,
 );
+
 export default router;

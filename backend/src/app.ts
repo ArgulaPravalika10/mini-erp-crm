@@ -1,15 +1,29 @@
-import express from "express";
 import cors from "cors";
+import express from "express";
+import { errorHandler, notFound } from "./middleware/errorHandler";
 import authRoutes from "./routes/authRoutes";
 import customerRoutes from "./routes/customerRoutes";
-import productRoutes from "./routes/productRoutes";
-import orderRoutes from "./routes/orderRoutes";
 import dashboardRoutes from "./routes/dashboardRoutes";
+import orderRoutes from "./routes/orderRoutes";
+import productRoutes from "./routes/productRoutes";
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN?.split(",") || true,
+    credentials: true,
+  }),
+);
 app.use(express.json());
+
+app.get("/", (_req, res) => {
+  res.send("Mini ERP + CRM Backend is running");
+});
+
+app.get("/api/health", (_req, res) => {
+  res.json({ service: "mini-erp-crm", status: "ok" });
+});
 
 app.use("/api/auth", authRoutes);
 app.use("/api/customers", customerRoutes);
@@ -17,11 +31,7 @@ app.use("/api/products", productRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
-app.get("/", (req, res) => {
-  res.send("Mini ERP + CRM Backend is Running...");
-});
+app.use(notFound);
+app.use(errorHandler);
 
-app.get("/test", (req, res) => {
-  res.send("Test route working");
-});
 export default app;
